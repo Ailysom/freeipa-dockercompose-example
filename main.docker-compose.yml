@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  ipa:
+    image: freeipa/freeipa-server:almalinux-9-4.11.0
+    hostname: ipa
+    domainname: ipa.tst.local
+    container_name: ipa
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80
+      - 443:443
+      - 389:389
+      - 636:636
+      - 88:88
+      - 464:464
+      - 88:88/udp
+      - 464:464/udp
+      - 123:123/udp
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    tty: true
+    stdin_open: true
+    environment:
+      IPA_SERVER_HOSTNAME: ipa.tst.local
+      IPA_SERVER_IP: 192.168.0.2
+      TZ: "Europe/Moscow"
+    command:
+      - -U
+      - --domain=tst.local
+      - --realm=tst.local
+      - --admin-password=change_me
+      - --http-pin=change_me
+      - --dirsrv-pin=change_me
+      - --ds-password=change_me
+      - --no-dnssec-validation
+      - --no-host-dns
+      - --setup-dns
+      - --auto-forwarders
+      - --allow-zone-overlap
+      - --unattended
+    cap_add:
+      - SYS_TIME
+      - NET_ADMIN
+    security_opt:
+      - "seccomp:unconfined"
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ./ipa-data:/data
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.lo.disable_ipv6=0

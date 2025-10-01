@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  ipa:
+    image: freeipa/freeipa-server:almalinux-9-4.11.0
+    hostname: ipa03
+    domainname: ipa03.tst.local
+    container_name: ipa
+    Ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80
+      - 443:443
+      - 389:389
+      - 636:636
+      - 88:88
+      - 464:464
+      - 88:88/udp
+      - 464:464/udp
+      - 123:123/udp
+    dns:
+      - 192.168.4.136
+    extra_hosts:
+      - "ipa03.tst.local:192.168.1.2"
+      - "ipa03:192.168.1.2"
+      - "ipa02.tst.local:192.168.0.3"
+      - "ipa02:192.168.0.3"
+      - "ipa.tst.local:192.168.0.2"
+      - "ipa:192.168.0.2"
+    tty: true
+    stdin_open: true
+    environment:
+      IPA_SERVER_HOSTNAME: ipa03.tst.local
+      IPA_SERVER_IP: 192.168.1.2
+    command:
+      - ipa-replica-install
+      - -U
+      - --setup-dns
+      - --auto-forwarders
+      - --setup-ca
+      - --domain=tst.local
+      - --realm=TST.LOCAL
+      - --server=ipa.tst.local
+      - --ip-address=192.168.1.2
+      - --principal=admin
+      - --password=change_me
+      - --unattended
+      - --force-join
+    cap_add:
+      - SYS_TIME
+      - NET_ADMIN
+    security_opt:
+      - "seccomp:unconfined"
+    restart: no
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ./ipa-data:/data
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.lo.disable_ipv6=0
+
